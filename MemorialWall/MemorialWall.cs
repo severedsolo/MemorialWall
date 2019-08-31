@@ -1,65 +1,62 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using UnityEngine;
-using KSP.UI;
 using FlightTracker;
-using System.Reflection;
+using KSP.UI;
+using UnityEngine;
 
-namespace MemorialBoard
+namespace MemorialWall
 {
     [KSPAddon(KSPAddon.Startup.SpaceCentre, false)]
     public class MemorialWall : MonoBehaviour
     {
-        IEnumerable<CrewListItem> crewItemContainers;
-        bool astronautComplexSpawned = false;
-        StringBuilder label = new StringBuilder();
-        ActiveFlightTracker tracker;
-        bool foundDeadKerbal = false;
+        private IEnumerable<CrewListItem> _crewItemContainers;
+        private bool _astronautComplexSpawned;
+        private StringBuilder _label = new StringBuilder();
+        private ActiveFlightTracker _tracker;
+        private bool _foundDeadKerbal;
 
-        void Start()
+   private void Start()
         {
             GameEvents.onGUIAstronautComplexSpawn.Add(AstronautComplexSpawned);
             GameEvents.onGUIAstronautComplexDespawn.Add(AstronautComplexDespawned);
-            tracker = ActiveFlightTracker.instance;
-            Debug.Log("[MemorialBoard]: MemorialBoard has registered events");
+            _tracker = ActiveFlightTracker.instance;
+            Debug.Log("[MemorialWall]: MemorialWall has registered events");
         }
 
         private void AstronautComplexDespawned()
         {
-            astronautComplexSpawned = false;
-            foundDeadKerbal = false;
-            Debug.Log("[MemorialBoard]: Astronaut Complex despawned");
+            _astronautComplexSpawned = false;
+            _foundDeadKerbal = false;
+            Debug.Log("[MemorialWall]: Astronaut Complex despawned");
         }
 
         private void AstronautComplexSpawned()
         {
-            astronautComplexSpawned = true;
-            Debug.Log("[MemorialBoard]: Astronaut Complex spawned");
+            _astronautComplexSpawned = true;
+            Debug.Log("[MemorialWall]: Astronaut Complex spawned");
         }
 
         private void LateUpdate()
         {
-            if (astronautComplexSpawned && !foundDeadKerbal)
+            if (!_astronautComplexSpawned || _foundDeadKerbal) return;
+            // ReSharper disable once Unity.PerformanceCriticalCodeInvocation
+            _crewItemContainers = FindObjectsOfType<CrewListItem>();
+            for (int i = 0; i < _crewItemContainers.Count(); i++)
             {
-                crewItemContainers = FindObjectsOfType<CrewListItem>();
-                CrewListItem crewContainer;
-                for (int i = 0; i < crewItemContainers.Count(); i++)
-                {
-                    crewContainer = crewItemContainers.ElementAt(i);
-                    ProtoCrewMember p = crewContainer.GetCrewRef();
-                    if (p.rosterStatus != ProtoCrewMember.RosterStatus.Dead) continue;
-                    crewContainer.SetName(p.name + " (Deceased)");
-                    if (!foundDeadKerbal) Debug.Log("[MemorialWall]: Overwriting AstronautComplexGUI");
-                    foundDeadKerbal = true;
-                    string flights = tracker.GetNumberOfFlights(p.name).ToString();
-                    string hours = tracker.ConvertUtToString(tracker.GetRecordedMissionTimeSeconds(p.name));
-                    string worldFirsts = tracker.GetNumberOfWorldFirsts(p.name).ToString();
-                    label.Length = 0;
-                    label.Append("Flights: " + flights + " | Hours: " + hours + " | World Firsts: " + worldFirsts);
-                    crewContainer.SetLabel(label.ToString());
-                }
+                CrewListItem crewContainer = _crewItemContainers.ElementAt(i);
+                ProtoCrewMember p = crewContainer.GetCrewRef();
+                if (p.rosterStatus != ProtoCrewMember.RosterStatus.Dead) continue;
+                crewContainer.SetName(p.name + " (Deceased)");
+                // ReSharper disable once Unity.PerformanceCriticalCodeInvocation
+                if (!_foundDeadKerbal) Debug.Log("[MemorialWall]: Overwriting AstronautComplexGUI");
+                _foundDeadKerbal = true;
+                string flights = _tracker.GetNumberOfFlights(p.name).ToString();
+                string hours = _tracker.ConvertUtToString(_tracker.GetRecordedMissionTimeSeconds(p.name));
+                string worldFirsts = _tracker.GetNumberOfWorldFirsts(p.name).ToString();
+                _label.Length = 0;
+                _label.Append("Flights: " + flights + " | Hours: " + hours + " | World Firsts: " + worldFirsts);
+                crewContainer.SetLabel(_label.ToString());
             }
         }
     }
