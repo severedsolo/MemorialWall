@@ -1,6 +1,6 @@
 {
-    "NAME"     : "FlightTracker",
-    "URL"      : "https://github.com/severedsolo/MemorialWall/blob/master/GameData/EarnYourStripes/EarnYourStripes.version",
+    "NAME"     : "MemorialWall",
+    "URL"      : "https://github.com/severedsolo/MemorialWall/blob/master/GameData/MemorialWall/MemorialWall.version",
     "DOWNLOAD" : "https://github.com/severedsolo/MemorialWall/releases",
     "GITHUB" :
     {
@@ -12,7 +12,7 @@
         "MAJOR" : 2,
         "MINOR" : 0,
         "PATCH" : 0,
-        "BUILD" : 0
+        "BUILD" : 1
     },
     "KSP_VERSION" :
     {
